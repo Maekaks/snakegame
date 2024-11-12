@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 2px solid #333;
+            background-color: #eee;
+        }
+        #message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="message"></div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let snake = [{ x: 200, y: 200 }];
+        let direction = { x: 0, y: -10 };
+        let food = { x: 100, y: 100 };
+        let score = 0;
+        let startTime = Date.now();
+
+        function drawSnake() {
+            ctx.fillStyle = "green";
+            snake.forEach(part => ctx.fillRect(part.x, part.y, 10, 10));
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                placeFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function changeDirection(event) {
+            const keyPressed = event.keyCode;
+            const goingUp = direction.y === -10;
+            const goingDown = direction.y === 10;
+            const goingRight = direction.x === 10;
+            const goingLeft = direction.x === -10;
+
+            if (keyPressed === 37 && !goingRight) direction = { x: -10, y: 0 };
+            if (keyPressed === 38 && !goingDown) direction = { x: 0, y: -10 };
+            if (keyPressed === 39 && !goingLeft) direction = { x: 10, y: 0 };
+            if (keyPressed === 40 && !goingUp) direction = { x: 0, y: 10 };
+        }
+
+        function placeFood() {
+            food.x = Math.floor(Math.random() * 40) * 10;
+            food.y = Math.floor(Math.random() * 40) * 10;
+        }
+
+        function drawFood() {
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, 10, 10);
+        }
+
+        function checkGameOver() {
+            const head = snake[0];
+
+            // Check if snake hits the walls
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) return true;
+
+            // Check if snake hits itself
+            for (let i = 4; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) return true;
+            }
+            return false;
+        }
+
+        function displayMessage(timeElapsed) {
+            const messageDiv = document.getElementById("message");
+            if (timeElapsed < 30000) {
+                messageDiv.textContent = "Tu es nul comme Swann!";
+            } else if (timeElapsed < 60000) {
+                messageDiv.textContent = "Tu es nul comme James!";
+            } else if (timeElapsed < 90000) {
+                messageDiv.textContent = "Tu es nul comme Léa!";
+            } else if (timeElapsed < 120000) {
+                messageDiv.textContent = "Tu es nul comme Lola!";
+            } else {
+                messageDiv.textContent = "Tu es nul comme Romain!";
+            }
+        }
+
+        function main() {
+            if (checkGameOver()) {
+                const timeElapsed = Date.now() - startTime;
+                displayMessage(timeElapsed);
+                return;
+            }
+
+            setTimeout(function onTick() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                moveSnake();
+                drawSnake();
+                drawFood();
+                main();
+            }, 100);
+        }
+
+        document.addEventListener("keydown", changeDirection);
+        placeFood();
+        main();
+    </script>
+</body>
+</html>
